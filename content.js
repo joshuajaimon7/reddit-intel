@@ -126,10 +126,10 @@
 
       // 2. Click any expand buttons
       const expandButtons = Array.from(document.querySelectorAll(
-        'button[aria-label*="more"], shreddit-comment-tree button, button:has(svg), .morecomments a, button:contains("more comments")'
+        'button, [role="button"], shreddit-comment-tree button, .morecomments a'
       )).filter(btn => {
-        const txt = (btn.innerText || '').toLowerCase();
-        return txt.includes('more') || txt.includes('view') || txt.includes('replies');
+        const txt = (btn.innerText || btn.getAttribute('aria-label') || '').toLowerCase();
+        return txt.includes('more') || txt.includes('view') || txt.includes('replies') || txt.includes('load');
       });
 
       expandButtons.slice(0, 5).forEach(b => {
@@ -260,6 +260,12 @@
         sendResponse({
           success: true,
           comments: expandedComments
+        });
+      }).catch((err) => {
+        sendResponse({
+          success: false,
+          error: err.message,
+          comments: parseRedditComments()
         });
       });
       return true;
