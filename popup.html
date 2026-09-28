@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Reddit Intel</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div class="app-container">
+    <!-- Header -->
+    <header class="app-header">
+      <div class="brand">
+        <div class="logo-mark">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+          </svg>
+        </div>
+        <div>
+          <div class="brand-title">
+            <span>Reddit Intel</span>
+            <span class="badge-pro" id="proHeaderBadge">PRO</span>
+          </div>
+          <div class="brand-sub">Lead & Sentiment Extractor</div>
+        </div>
+      </div>
+      <button class="upgrade-btn" id="upgradeBtn">Upgrade</button>
+    </header>
+
+    <!-- Status Bar -->
+    <div class="status-bar" id="statusBar">
+      <div class="status-indicator"></div>
+      <span id="statusText">Scanning active Reddit thread...</span>
+    </div>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <!-- Empty State -->
+      <div class="empty-state" id="emptyState" style="display: none;">
+        <div class="empty-icon-box">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="8"/>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+          </svg>
+        </div>
+        <h3>No Reddit Thread Detected</h3>
+        <p>Open any Reddit post or launch our test grounds to inspect comments.</p>
+        <button class="primary-btn" id="openDemoBtn">Open Test Grounds</button>
+      </div>
+
+      <!-- Comments Found View -->
+      <div class="comments-view" id="commentsView" style="display: none;">
+        <!-- Thread Info -->
+        <div class="thread-info">
+          <div class="thread-title" id="threadTitle">Thread Title</div>
+          <div class="thread-meta">
+            <span id="commentCountBadge">0 comments</span>
+            <span class="thread-dot">•</span>
+            <span id="questionsCountBadge">0 questions</span>
+          </div>
+        </div>
+
+        <!-- Filter Bar -->
+        <div class="filter-bar">
+          <input type="text" id="searchInput" class="search-input" placeholder="Search keywords...">
+          <button class="filter-toggle" id="questionsOnlyToggle">
+            Questions Only
+          </button>
+        </div>
+
+        <!-- Comments Scroll Preview -->
+        <div class="comments-scroll" id="commentsList"></div>
+
+        <!-- Action Grid -->
+        <div class="action-grid">
+          <button class="action-btn action-primary" id="exportCsvBtn">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+              <polyline points="7 10 12 15 17 10"/>
+              <line x1="12" y1="15" x2="12" y2="3"/>
+            </svg>
+            <span>Export CSV</span>
+          </button>
+          <button class="action-btn action-secondary" id="copyTsvBtn">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+            </svg>
+            <span>Copy TSV</span>
+          </button>
+          <button class="action-btn action-secondary" id="exportJsonBtn">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+              <polyline points="14 2 14 8 20 8"/>
+            </svg>
+            <span>JSON</span>
+          </button>
+        </div>
+      </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="app-footer">
+      <div class="pro-banner" id="footerBanner">
+        <span>Free tier: Max 30 comments</span>
+        <a href="#" id="proUpgradeLink" class="pro-link">Upgrade to Lifetime</a>
+      </div>
+    </footer>
+
+    <!-- Upgrade Modal -->
+    <div class="modal-backdrop" id="upgradeModal" style="display: none;">
+      <div class="modal-box">
+        <button class="modal-close" id="modalCloseBtn">&times;</button>
+        <h2>Reddit Intel Pro</h2>
+        <p class="modal-desc">Extract thousands of comments across unlimited threads with advanced pain-point filtering.</p>
+        <ul class="modal-perks">
+          <li>Unlimited comment exports</li>
+          <li>Instant Questions-Only pain point filter</li>
+          <li>CSV, TSV, and JSON formats</li>
+          <li>Lifetime license with all future updates</li>
+        </ul>
+        <div class="price-tag">
+          <span class="price-val">$4.99</span>
+          <span class="price-period">one-time payment</span>
+        </div>
+        <button class="checkout-btn" id="startCheckoutBtn">Unlock Lifetime Access</button>
+        <p class="money-back">Processed securely via Lemon Squeezy</p>
+      </div>
+    </div>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

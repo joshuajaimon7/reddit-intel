@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Reddit Intel - Test Grounds (r/SaaS Thread Simulation)</title>
+  <style>
+    :root {
+      --bg: #000000;
+      --surface: #121214;
+      --surface-elevated: #1c1c1e;
+      --border: #242426;
+      --border-medium: #333336;
+      --text: #f5f5f7;
+      --text-muted: #86868b;
+      --text-dim: #545458;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-font-smoothing: antialiased; }
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", sans-serif;
+      padding: 40px 20px;
+      line-height: 1.5;
+    }
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+    }
+    .header-banner {
+      background: var(--surface);
+      border: 1px solid var(--border-medium);
+      border-radius: 8px;
+      padding: 20px;
+      margin-bottom: 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .header-banner h1 {
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 4px;
+    }
+    .header-banner p {
+      color: var(--text-muted);
+      font-size: 13px;
+    }
+    .badge-test {
+      background: var(--surface-elevated);
+      border: 1px solid var(--border);
+      color: var(--text-secondary);
+      font-size: 11px;
+      padding: 4px 8px;
+      border-radius: 4px;
+    }
+
+    /* Reddit Thread Simulation */
+    .thread-post {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+    .post-sub {
+      font-size: 11.5px;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+    }
+    .post-title {
+      font-size: 18px;
+      font-weight: 700;
+      margin-bottom: 12px;
+      color: var(--text);
+    }
+    .post-body {
+      font-size: 13.5px;
+      color: var(--text-muted);
+      line-height: 1.6;
+    }
+
+    /* Comments Section */
+    .comments-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text);
+      margin: 24px 0 14px 0;
+    }
+    .reddit-comment {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 14px 16px;
+      margin-bottom: 12px;
+    }
+    .comment-meta {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 11.5px;
+      color: var(--text-dim);
+      margin-bottom: 6px;
+    }
+    .reddit-author {
+      font-weight: 600;
+      color: var(--text);
+    }
+    .reddit-score {
+      color: var(--text-muted);
+    }
+    .reddit-body {
+      font-size: 13px;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header-banner">
+      <div>
+        <h1>Reddit Intel Test Grounds</h1>
+        <p>Click the Reddit Intel icon in your Chrome toolbar to test comment extraction, search, and questions filtering.</p>
+      </div>
+      <span class="badge-test">Test Workspace</span>
+    </div>
+
+    <!-- Simulated Reddit Post -->
+    <div class="thread-post">
+      <div class="post-sub">r/SaaS • Posted by u/saas_builder • 4 hours ago</div>
+      <h2 class="post-title">What daily browser tasks are you desperately wishing had an automation tool?</h2>
+      <div class="post-body">
+        Hey everyone, doing some research into browser extensions and developer tools. What repetitive manual tasks are eating up your time every week? Looking to solve real problems.
+      </div>
+    </div>
+
+    <div class="comments-title">Discussion & Comments (10 Extracted)</div>
+
+    <!-- Comments List -->
+    <div class="reddit-comment">
+      <div class="comment-meta">
+        <span class="reddit-author">u/dev_marketer</span>
+        <span>•</span>
+        <span class="reddit-score">42 points</span>
+      </div>
+      <div class="reddit-body">Exporting data tables from competitor directories. I spend at least 4 hours every Tuesday copy-pasting tables into Google Sheets because most SaaS don't have an export button. Is there any good tool that doesn't charge $30/month?</div>
+    </div>
+
+    <div class="reddit-comment">
+      <div class="comment-meta">
+        <span class="reddit-author">u/indie_alex</span>
+        <span>•</span>
+        <span class="reddit-score">18 points</span>
+      </div>
+      <div class="reddit-body">For me it's market research on Reddit itself. Scrolling 300 comments to find what people hate about existing software takes forever. How do you guys automate pain point analysis?</div>
+    </div>
+
+    <div class="reddit-comment">
+      <div class="comment-meta">
+        <span class="reddit-author">u/sarah_ecom</span>
+        <span>•</span>
+        <span class="reddit-score">29 points</span>
+      </div>
+      <div class="reddit-body">Product inventory updates. If an extension could just grab HTML tables and give me a clean CSV with comma escaping, I'd pay $10 immediately.</div>
+    </div>
+
+    <div class="reddit-comment">
+      <div class="comment-meta">
+        <span class="reddit-author">u/growth_lead</span>
+        <span>•</span>
+        <span class="reddit-score">12 points</span>
+      </div>
+      <div class="reddit-body">Honestly I hate extensions that require server logins or cloud tokens. If it's private and runs locally in my Chrome tab, that's what gets my company's approval.</div>
+    </div>
+
+    <div class="reddit-comment">
+      <div class="comment-meta">
+        <span class="reddit-author">u/vance_tech</span>
+        <span>•</span>
+        <span class="reddit-score">8 points</span>
+      </div>
+      <div class="reddit-body">What's the pricing model you're thinking of? Most people prefer lifetime one-time purchases over another $5/month SaaS bill.</div>
+    </div>
+
+    <div class="reddit-comment">
+      <div class="comment-meta">
+        <span class="reddit-author">u/clara_ui</span>
+        <span>•</span>
+        <span class="reddit-score">15 points</span>
+      </div>
+      <div class="reddit-body">Clean dark mode UI is a must. Most extensions look like they were built in 2012 with loud colors. Minimalist Apple or Linear style makes it feel trustworthy.</div>
+    </div>
+  </div>
+
+  <link rel="stylesheet" href="content.css">
+  <script src="content.js"></script>
+</body>
+</html>
