@@ -59,17 +59,9 @@ document.addEventListener('DOMContentLoaded', async () => {
   modalCloseBtn.addEventListener('click', hideUpgrade);
 
   // Buy License (links to Lemon Squeezy product)
+  const CHECKOUT_URL = "https://micro-software-lab.lemonsqueezy.com/checkout/buy/691cd187-b593-43db-adbd-f516a1e478b4";
   startCheckoutBtn.addEventListener('click', () => {
-    // In production, open your Lemon Squeezy checkout link:
-    // chrome.tabs.create({ url: 'https://redditintel.lemonsqueezy.com/checkout/buy/...' });
-    
-    // Developer test unlock option:
-    if (confirm('Simulate purchasing a license key and activate Reddit Intel Pro?')) {
-      chrome.storage.local.set({ reddit_intel_is_pro: true, reddit_intel_key: 'DEV-TEST-KEY-2026' }, () => {
-        alert('Reddit Intel Pro license activated.');
-        location.reload();
-      });
-    }
+    chrome.tabs.create({ url: CHECKOUT_URL });
   });
 
   // Activate License Key Input
