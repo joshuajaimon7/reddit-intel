@@ -1,5 +1,5 @@
-// Reddit Intel - Content Script
-// Extracts comments from modern Reddit (shreddit), redesign, old Reddit, and test grounds
+// Reddit Intel - Enhanced Content Script
+// Advanced comment extraction, deep auto-scroll, sentiment/intent classification
 
 (function () {
   function cleanText(txt) {
@@ -7,10 +7,27 @@
     return txt.replace(/\s+/g, ' ').trim();
   }
 
+  // Sentiment / Intent Classifier
+  const PAIN_KEYWORDS = ['hate', 'issue', 'bug', 'broken', 'terrible', 'annoying', 'alternative', 'frustrating', 'waste', 'problem', 'sucks', 'slow', 'fail', 'bad', 'difficult', 'struggle', 'expensive'];
+  const PRAISE_KEYWORDS = ['love', 'best', 'recommend', 'switched to', 'amazing', 'great', 'fantastic', 'game changer', 'perfect', 'awesome'];
+
+  function classifyIntent(text) {
+    const lower = text.toLowerCase();
+    const isQuestion = text.includes('?') || lower.startsWith('how') || lower.startsWith('why') || lower.startsWith('what') || lower.includes('is there');
+    const isPainPoint = PAIN_KEYWORDS.some(w => lower.includes(w));
+    const isPraise = PRAISE_KEYWORDS.some(w => lower.includes(w));
+
+    return {
+      isQuestion,
+      isPainPoint,
+      isPraise
+    };
+  }
+
   function parseRedditComments() {
     const results = [];
 
-    // Strategy 1: Modern Reddit Web Components (<shreddit-comment>)
+    // Modern Reddit: <shreddit-comment>
     const shredditComments = document.querySelectorAll('shreddit-comment');
     if (shredditComments.length > 0) {
       shredditComments.forEach((c) => {
@@ -18,7 +35,6 @@
         const score = c.getAttribute('score') || c.querySelector('[slot="credit-bar"]')?.innerText || '0';
         const permalink = c.getAttribute('permalink') ? `https://reddit.com${c.getAttribute('permalink')}` : window.location.href;
         
-        // Body text in slot="comment"
         const bodyEl = c.querySelector('div[slot="comment"]') || c.querySelector('div[id*="-post-rtjson-content"]');
         let body = '';
         if (bodyEl) {
@@ -28,11 +44,14 @@
         }
 
         if (body.length > 0) {
+          const intent = classifyIntent(body);
           results.push({
             author: author.replace(/^u\//, ''),
             score: score.toString(),
             body: body,
-            isQuestion: body.includes('?'),
+            isQuestion: intent.isQuestion,
+            isPainPoint: intent.isPainPoint,
+            isPraise: intent.isPraise,
             permalink: permalink
           });
         }
@@ -40,7 +59,7 @@
       if (results.length > 0) return results;
     }
 
-    // Strategy 2: React Redesign / Desktop Reddit (div[data-testid="comment"])
+    // React Redesign / Desktop Reddit (div[data-testid="comment"])
     const testidComments = document.querySelectorAll('div[data-testid="comment"]');
     if (testidComments.length > 0) {
       testidComments.forEach((c) => {
@@ -56,11 +75,14 @@
         const body = cleanText(clone.innerText || clone.textContent);
 
         if (body.length > 0) {
+          const intent = classifyIntent(body);
           results.push({
             author: author.replace(/^u\//, ''),
             score: score || '0',
             body: body,
-            isQuestion: body.includes('?'),
+            isQuestion: intent.isQuestion,
+            isPainPoint: intent.isPainPoint,
+            isPraise: intent.isPraise,
             permalink: window.location.href
           });
         }
@@ -68,7 +90,7 @@
       if (results.length > 0) return results;
     }
 
-    // Strategy 3: Old Reddit or Test Grounds (.comment or .reddit-comment)
+    // Old Reddit or Test Grounds (.comment or .reddit-comment)
     const fallbackComments = document.querySelectorAll('.comment, .reddit-comment, [data-comment]');
     fallbackComments.forEach((c) => {
       const author = c.querySelector('.author, .reddit-author')?.innerText || 'anonymous';
@@ -76,11 +98,14 @@
       const body = c.querySelector('.md, .reddit-body, p')?.innerText || cleanText(c.innerText);
 
       if (body && body.length > 0) {
+        const intent = classifyIntent(body);
         results.push({
           author: cleanText(author).replace(/^u\//, ''),
           score: cleanText(score),
           body: cleanText(body),
-          isQuestion: body.includes('?'),
+          isQuestion: intent.isQuestion,
+          isPainPoint: intent.isPainPoint,
+          isPraise: intent.isPraise,
           permalink: window.location.href
         });
       }
@@ -89,14 +114,51 @@
     return results;
   }
 
-  // Floating helper badge on Reddit threads
+  // Deep Scan Engine: scrolls and expands hidden comments
+  async function performDeepScan(onProgress) {
+    let previousCount = 0;
+    let attempts = 0;
+    const maxAttempts = 6;
+
+    while (attempts < maxAttempts) {
+      // 1. Scroll window
+      window.scrollTo(0, document.body.scrollHeight);
+
+      // 2. Click any expand buttons
+      const expandButtons = Array.from(document.querySelectorAll(
+        'button[aria-label*="more"], shreddit-comment-tree button, button:has(svg), .morecomments a, button:contains("more comments")'
+      )).filter(btn => {
+        const txt = (btn.innerText || '').toLowerCase();
+        return txt.includes('more') || txt.includes('view') || txt.includes('replies');
+      });
+
+      expandButtons.slice(0, 5).forEach(b => {
+        try { b.click(); } catch (e) {}
+      });
+
+      await new Promise(r => setTimeout(r, 650));
+      const current = parseRedditComments().length;
+      if (onProgress) onProgress(current);
+
+      if (current === previousCount) {
+        attempts++;
+      } else {
+        attempts = 0;
+        previousCount = current;
+      }
+    }
+
+    return parseRedditComments();
+  }
+
+  // In-Page Badge
   function showRedditBadge(count) {
     if (document.getElementById('reddit-intel-badge')) return;
     const badge = document.createElement('div');
     badge.id = 'reddit-intel-badge';
     badge.innerHTML = `
       <span class="reddit-intel-count">${count} Comments</span>
-      <button class="reddit-intel-btn" id="reddit-intel-extract-btn">Extract CSV</button>
+      <button class="reddit-intel-btn" id="reddit-intel-extract-btn">Export CSV</button>
     `;
 
     badge.querySelector('#reddit-intel-extract-btn').addEventListener('click', () => {
@@ -111,14 +173,21 @@
   }
 
   function toCSV(data) {
-    const headers = ['Author', 'Score', 'Question', 'Comment Body', 'Permalink'];
-    const rows = data.map(c => [
-      c.author,
-      c.score,
-      c.isQuestion ? 'YES' : 'NO',
-      c.body,
-      c.permalink
-    ]);
+    const headers = ['Author', 'Score', 'Intent', 'Comment Body', 'Permalink'];
+    const rows = data.map(c => {
+      let intentTag = 'General';
+      if (c.isPainPoint) intentTag = 'Pain Point';
+      else if (c.isQuestion) intentTag = 'Question';
+      else if (c.isPraise) intentTag = 'Recommendation';
+
+      return [
+        c.author,
+        c.score,
+        intentTag,
+        c.body,
+        c.permalink
+      ];
+    });
 
     const all = [headers, ...rows];
     return all.map(row => 
@@ -165,7 +234,6 @@
     }, 2400);
   }
 
-  // Automatic detection
   setTimeout(() => {
     const comments = parseRedditComments();
     if (comments.length > 0 && window.location.hostname.includes('reddit.com')) {
@@ -173,7 +241,7 @@
     }
   }, 1200);
 
-  // Message listener for Popup
+  // Message listener
   chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     if (request.type === 'SCAN_REDDIT_COMMENTS') {
       const comments = parseRedditComments();
@@ -183,6 +251,16 @@
         title: cleanText(title),
         url: window.location.href,
         comments: comments
+      });
+      return true;
+    }
+
+    if (request.type === 'TRIGGER_DEEP_SCAN') {
+      performDeepScan().then((expandedComments) => {
+        sendResponse({
+          success: true,
+          comments: expandedComments
+        });
       });
       return true;
     }

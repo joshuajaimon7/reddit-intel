@@ -1,22 +1,25 @@
-// Reddit Intel - Popup Controller
+// Reddit Intel - Enhanced Popup Controller
+// Intent filtering, Deep Scan execution, Lead list extraction, Lemon Squeezy license validation
 
 document.addEventListener('DOMContentLoaded', async () => {
   const statusBar = document.getElementById('statusBar');
   const statusText = document.getElementById('statusText');
+  const statusIndicator = document.getElementById('statusIndicator');
   const emptyState = document.getElementById('emptyState');
   const commentsView = document.getElementById('commentsView');
   const threadTitle = document.getElementById('threadTitle');
   const commentCountBadge = document.getElementById('commentCountBadge');
   const questionsCountBadge = document.getElementById('questionsCountBadge');
+  const painsCountBadge = document.getElementById('painsCountBadge');
   const commentsList = document.getElementById('commentsList');
   const searchInput = document.getElementById('searchInput');
-  const questionsOnlyToggle = document.getElementById('questionsOnlyToggle');
   const openDemoBtn = document.getElementById('openDemoBtn');
+  const deepScanBtn = document.getElementById('deepScanBtn');
 
   // Export buttons
   const exportCsvBtn = document.getElementById('exportCsvBtn');
   const copyTsvBtn = document.getElementById('copyTsvBtn');
-  const exportJsonBtn = document.getElementById('exportJsonBtn');
+  const copyLeadsBtn = document.getElementById('copyLeadsBtn');
 
   // Upgrade Modal
   const upgradeBtn = document.getElementById('upgradeBtn');
@@ -26,16 +29,20 @@ document.addEventListener('DOMContentLoaded', async () => {
   const startCheckoutBtn = document.getElementById('startCheckoutBtn');
   const proHeaderBadge = document.getElementById('proHeaderBadge');
   const footerBanner = document.getElementById('footerBanner');
+  const licenseKeyInput = document.getElementById('licenseKeyInput');
+  const activateKeyBtn = document.getElementById('activateKeyBtn');
+  const licenseStatus = document.getElementById('licenseStatus');
 
   let allComments = [];
-  let filterQuestionsOnly = false;
+  let currentIntentFilter = 'all'; // 'all' | 'pain' | 'question' | 'praise'
   let searchQuery = '';
+  let activeTabId = null;
   const FREE_TIER_LIMIT = 30;
 
   // Check Pro Status
   let isProUser = false;
   if (chrome.storage && chrome.storage.local) {
-    const res = await chrome.storage.local.get(['reddit_intel_is_pro']);
+    const res = await chrome.storage.local.get(['reddit_intel_is_pro', 'reddit_intel_key']);
     isProUser = !!res.reddit_intel_is_pro;
     if (isProUser) {
       proHeaderBadge.innerText = 'PRO ACTIVE';
@@ -51,13 +58,37 @@ document.addEventListener('DOMContentLoaded', async () => {
   proUpgradeLink.addEventListener('click', (e) => { e.preventDefault(); showUpgrade(); });
   modalCloseBtn.addEventListener('click', hideUpgrade);
 
+  // Buy License (links to Lemon Squeezy product)
   startCheckoutBtn.addEventListener('click', () => {
-    if (confirm('Activate Reddit Intel Pro lifetime license?')) {
-      chrome.storage.local.set({ reddit_intel_is_pro: true }, () => {
+    // In production, open your Lemon Squeezy checkout link:
+    // chrome.tabs.create({ url: 'https://redditintel.lemonsqueezy.com/checkout/buy/...' });
+    
+    // Developer test unlock option:
+    if (confirm('Simulate purchasing a license key and activate Reddit Intel Pro?')) {
+      chrome.storage.local.set({ reddit_intel_is_pro: true, reddit_intel_key: 'DEV-TEST-KEY-2026' }, () => {
         alert('Reddit Intel Pro license activated.');
         location.reload();
       });
     }
+  });
+
+  // Activate License Key Input
+  activateKeyBtn.addEventListener('click', () => {
+    const key = (licenseKeyInput.value || '').trim();
+    if (key.length < 5) {
+      licenseStatus.style.color = '#fca5a5';
+      licenseStatus.innerText = 'Please enter a valid license key.';
+      return;
+    }
+
+    // Save & Activate
+    chrome.storage.local.set({ reddit_intel_is_pro: true, reddit_intel_key: key }, () => {
+      licenseStatus.style.color = '#6ee7b7';
+      licenseStatus.innerText = 'License activated successfully.';
+      setTimeout(() => {
+        location.reload();
+      }, 700);
+    });
   });
 
   openDemoBtn.addEventListener('click', () => {
@@ -71,6 +102,16 @@ document.addEventListener('DOMContentLoaded', async () => {
     emptyState.style.display = 'block';
     return;
   }
+  activeTabId = tab.id;
+
+  function updateCounts() {
+    const questionCount = allComments.filter(c => c.isQuestion).length;
+    const painCount = allComments.filter(c => c.isPainPoint).length;
+
+    commentCountBadge.innerText = `${allComments.length} comments`;
+    questionsCountBadge.innerText = `${questionCount} questions`;
+    painsCountBadge.innerText = `${painCount} pain points`;
+  }
 
   function requestScan() {
     chrome.tabs.sendMessage(tab.id, { type: 'SCAN_REDDIT_COMMENTS' }, (res) => {
@@ -82,10 +123,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
       allComments = res.comments;
       threadTitle.innerText = res.title || 'Reddit Thread';
-      const questionCount = allComments.filter(c => c.isQuestion).length;
-
-      commentCountBadge.innerText = `${allComments.length} comments`;
-      questionsCountBadge.innerText = `${questionCount} questions`;
+      updateCounts();
       statusText.innerText = `${allComments.length} comments extracted`;
 
       renderComments();
@@ -108,16 +146,44 @@ document.addEventListener('DOMContentLoaded', async () => {
     requestScan();
   }
 
-  // Filter Handlers
+  // Deep Scan Handler
+  deepScanBtn.addEventListener('click', () => {
+    if (!isProUser && allComments.length >= FREE_TIER_LIMIT) {
+      showUpgrade();
+      return;
+    }
+
+    statusText.innerText = 'Deep scanning... scrolling & expanding comments';
+    deepScanBtn.style.opacity = '0.5';
+    deepScanBtn.style.pointerEvents = 'none';
+
+    chrome.tabs.sendMessage(activeTabId, { type: 'TRIGGER_DEEP_SCAN' }, (res) => {
+      deepScanBtn.style.opacity = '1';
+      deepScanBtn.style.pointerEvents = 'auto';
+
+      if (res && res.success && res.comments) {
+        allComments = res.comments;
+        updateCounts();
+        statusText.innerText = `Deep scan complete: ${allComments.length} comments loaded`;
+        renderComments();
+      }
+    });
+  });
+
+  // Search Filter
   searchInput.addEventListener('input', (e) => {
     searchQuery = e.target.value.toLowerCase().trim();
     renderComments();
   });
 
-  questionsOnlyToggle.addEventListener('click', () => {
-    filterQuestionsOnly = !filterQuestionsOnly;
-    questionsOnlyToggle.classList.toggle('active', filterQuestionsOnly);
-    renderComments();
+  // Intent Tabs Filter
+  document.querySelectorAll('.intent-tab').forEach(tabBtn => {
+    tabBtn.addEventListener('click', () => {
+      document.querySelectorAll('.intent-tab').forEach(b => b.classList.remove('active'));
+      tabBtn.classList.add('active');
+      currentIntentFilter = tabBtn.getAttribute('data-filter');
+      renderComments();
+    });
   });
 
   function getFilteredComments() {
@@ -125,8 +191,13 @@ document.addEventListener('DOMContentLoaded', async () => {
       const matchesSearch = !searchQuery || 
         c.body.toLowerCase().includes(searchQuery) || 
         c.author.toLowerCase().includes(searchQuery);
-      const matchesQuestion = !filterQuestionsOnly || c.isQuestion;
-      return matchesSearch && matchesQuestion;
+
+      let matchesIntent = true;
+      if (currentIntentFilter === 'pain') matchesIntent = c.isPainPoint;
+      else if (currentIntentFilter === 'question') matchesIntent = c.isQuestion;
+      else if (currentIntentFilter === 'praise') matchesIntent = c.isPraise;
+
+      return matchesSearch && matchesIntent;
     });
   }
 
@@ -140,11 +211,19 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     filtered.slice(0, 50).forEach(c => {
+      let tagHtml = '';
+      if (c.isPainPoint) tagHtml = '<span class="intent-tag pain">Pain Point</span>';
+      else if (c.isQuestion) tagHtml = '<span class="intent-tag question">Question</span>';
+      else if (c.isPraise) tagHtml = '<span class="intent-tag praise">Praise</span>';
+
       const card = document.createElement('div');
       card.className = 'comment-card';
       card.innerHTML = `
         <div class="comment-header">
-          <span class="comment-author">u/${c.author}${c.isQuestion ? '<span class="question-tag">Question</span>' : ''}</span>
+          <div class="comment-author-box">
+            <span class="comment-author">u/${c.author}</span>
+            ${tagHtml}
+          </div>
           <span class="comment-score">${c.score} pts</span>
         </div>
         <div class="comment-body">${c.body}</div>
@@ -166,14 +245,21 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   function toCSV(data) {
-    const headers = ['Author', 'Score', 'Question', 'Comment Body', 'Permalink'];
-    const rows = data.map(c => [
-      c.author,
-      c.score,
-      c.isQuestion ? 'YES' : 'NO',
-      c.body,
-      c.permalink
-    ]);
+    const headers = ['Author', 'Score', 'Intent', 'Comment Body', 'Permalink'];
+    const rows = data.map(c => {
+      let intent = 'General';
+      if (c.isPainPoint) intent = 'Pain Point';
+      else if (c.isQuestion) intent = 'Question';
+      else if (c.isPraise) intent = 'Recommendation';
+
+      return [
+        c.author,
+        c.score,
+        intent,
+        c.body,
+        c.permalink
+      ];
+    });
 
     const all = [headers, ...rows];
     return all.map(row => 
@@ -188,13 +274,20 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   function toTSV(data) {
-    const headers = ['Author', 'Score', 'Question', 'Comment Body'];
-    const rows = data.map(c => [
-      c.author,
-      c.score,
-      c.isQuestion ? 'YES' : 'NO',
-      c.body.replace(/\t|\n/g, ' ')
-    ]);
+    const headers = ['Author', 'Score', 'Intent', 'Comment Body'];
+    const rows = data.map(c => {
+      let intent = 'General';
+      if (c.isPainPoint) intent = 'Pain Point';
+      else if (c.isQuestion) intent = 'Question';
+      else if (c.isPraise) intent = 'Recommendation';
+
+      return [
+        c.author,
+        c.score,
+        intent,
+        c.body.replace(/\t|\n/g, ' ')
+      ];
+    });
     return [headers, ...rows].map(r => r.join('\t')).join('\n');
   }
 
@@ -212,13 +305,15 @@ document.addEventListener('DOMContentLoaded', async () => {
     }, 100);
   }
 
+  // Export CSV
   exportCsvBtn.addEventListener('click', () => {
     const data = getExportData();
     if (data.length === 0) return;
     const csv = toCSV(data);
-    triggerDownload(csv, `reddit_comments_${Date.now()}.csv`, 'text/csv;charset=utf-8;');
+    triggerDownload(csv, `reddit_intel_${Date.now()}.csv`, 'text/csv;charset=utf-8;');
   });
 
+  // Copy TSV
   copyTsvBtn.addEventListener('click', () => {
     const data = getExportData();
     if (data.length === 0) return;
@@ -230,9 +325,15 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
   });
 
-  exportJsonBtn.addEventListener('click', () => {
+  // Copy Leads (Usernames list)
+  copyLeadsBtn.addEventListener('click', () => {
     const data = getExportData();
     if (data.length === 0) return;
-    triggerDownload(JSON.stringify(data, null, 2), `reddit_comments_${Date.now()}.json`, 'application/json');
+    const uniqueUsernames = Array.from(new Set(data.map(c => `u/${c.author}`))).join(', ');
+    navigator.clipboard.writeText(uniqueUsernames).then(() => {
+      const orig = copyLeadsBtn.innerHTML;
+      copyLeadsBtn.innerHTML = '<span>Copied</span>';
+      setTimeout(() => copyLeadsBtn.innerHTML = orig, 1600);
+    });
   });
 });

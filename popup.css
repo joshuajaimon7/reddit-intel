@@ -1,4 +1,4 @@
-/* Reddit Intel - Apple Minimalist Dark Styling */
+/* Reddit Intel - Apple Minimalist Dark Styling (Enhanced Edition) */
 
 :root {
   --bg-app: #000000;
@@ -29,8 +29,8 @@
 }
 
 body {
-  width: 370px;
-  min-height: 480px;
+  width: 375px;
+  min-height: 500px;
   background-color: var(--bg-app);
   color: var(--text-primary);
   font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Helvetica Neue", sans-serif;
@@ -42,7 +42,7 @@ body {
 .app-container {
   display: flex;
   flex-direction: column;
-  min-height: 480px;
+  min-height: 500px;
 }
 
 /* Header */
@@ -107,7 +107,7 @@ body {
   padding: 4px 8px;
   border-radius: var(--radius-xs);
   cursor: pointer;
-  transition: background 0.15s ease, border-color 0.15s ease;
+  transition: background 0.15s ease;
 }
 
 .upgrade-btn:hover {
@@ -137,7 +137,7 @@ body {
 /* Main Content */
 .main-content {
   flex: 1;
-  padding: 14px;
+  padding: 12px 14px;
   display: flex;
   flex-direction: column;
 }
@@ -194,7 +194,7 @@ body {
 .comments-view {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 9px;
 }
 
 .thread-info {
@@ -204,6 +204,14 @@ body {
   padding: 8px 10px;
 }
 
+.thread-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 3px;
+}
+
 .thread-title {
   font-size: 12px;
   font-weight: 600;
@@ -211,7 +219,28 @@ body {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  margin-bottom: 3px;
+  flex: 1;
+}
+
+.deep-scan-btn {
+  background: var(--bg-surface-elevated);
+  color: var(--text-primary);
+  border: 1px solid var(--border-subtle);
+  font-size: 10px;
+  font-weight: 500;
+  padding: 3px 7px;
+  border-radius: var(--radius-xs);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s ease;
+}
+
+.deep-scan-btn:hover {
+  background: var(--bg-surface-hover);
+  border-color: var(--border-medium);
 }
 
 .thread-meta {
@@ -219,19 +248,18 @@ body {
   color: var(--text-tertiary);
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 5px;
 }
 
 .thread-dot { opacity: 0.5; }
 
-/* Filter Bar */
-.filter-bar {
+/* Search Bar */
+.search-bar {
   display: flex;
-  gap: 6px;
 }
 
 .search-input {
-  flex: 1;
+  width: 100%;
   background: var(--bg-surface);
   color: var(--text-primary);
   border: 1px solid var(--border-subtle);
@@ -245,22 +273,38 @@ body {
   border-color: var(--border-medium);
 }
 
-.filter-toggle {
+/* Intent Filter Tabs */
+.intent-tabs {
+  display: flex;
   background: var(--bg-surface);
-  color: var(--text-secondary);
   border: 1px solid var(--border-subtle);
-  padding: 5px 8px;
   border-radius: var(--radius-xs);
-  font-size: 11px;
-  cursor: pointer;
-  white-space: nowrap;
+  padding: 2px;
+  gap: 2px;
 }
 
-.filter-toggle.active {
-  background: #ffffff;
-  color: #000000;
+.intent-tab {
+  flex: 1;
+  background: none;
+  border: none;
+  color: var(--text-tertiary);
+  font-size: 10.5px;
+  font-weight: 500;
+  padding: 4px 6px;
+  border-radius: 3px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  text-align: center;
+}
+
+.intent-tab:hover {
+  color: var(--text-secondary);
+}
+
+.intent-tab.active {
+  background: var(--bg-surface-elevated);
+  color: var(--text-primary);
   font-weight: 600;
-  border-color: #ffffff;
 }
 
 /* Comments Scroll */
@@ -292,9 +336,42 @@ body {
   font-size: 10.5px;
 }
 
+.comment-author-box {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
 .comment-author {
   font-weight: 600;
   color: var(--text-primary);
+}
+
+.intent-tag {
+  font-size: 9px;
+  padding: 1px 4px;
+  border-radius: 3px;
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-surface-elevated);
+  color: var(--text-secondary);
+}
+
+.intent-tag.pain {
+  border-color: rgba(239, 68, 68, 0.3);
+  color: #fca5a5;
+  background: rgba(239, 68, 68, 0.08);
+}
+
+.intent-tag.question {
+  border-color: rgba(59, 130, 246, 0.3);
+  color: #93c5fd;
+  background: rgba(59, 130, 246, 0.08);
+}
+
+.intent-tag.praise {
+  border-color: rgba(16, 185, 129, 0.3);
+  color: #6ee7b7;
+  background: rgba(16, 185, 129, 0.08);
 }
 
 .comment-score {
@@ -310,21 +387,10 @@ body {
   overflow: hidden;
 }
 
-.question-tag {
-  display: inline-block;
-  font-size: 9px;
-  background: var(--bg-surface-elevated);
-  border: 1px solid var(--border-subtle);
-  color: var(--text-secondary);
-  padding: 1px 4px;
-  border-radius: 3px;
-  margin-left: 6px;
-}
-
 /* Actions Grid */
 .action-grid {
   display: grid;
-  grid-template-columns: 1.3fr 1fr 0.8fr;
+  grid-template-columns: 1.3fr 1fr 1fr;
   gap: 7px;
   margin-top: 2px;
 }
@@ -393,7 +459,7 @@ body {
 .modal-backdrop {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.8);
+  background: rgba(0, 0, 0, 0.82);
   backdrop-filter: blur(8px);
   display: flex;
   align-items: center;
@@ -443,8 +509,8 @@ body {
   font-size: 11px;
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  margin-bottom: 14px;
+  gap: 5px;
+  margin-bottom: 12px;
   padding: 10px;
   background: var(--bg-surface-elevated);
   border: 1px solid var(--border-subtle);
@@ -457,7 +523,7 @@ body {
   align-items: baseline;
   justify-content: center;
   gap: 5px;
-  margin-bottom: 12px;
+  margin-bottom: 10px;
 }
 
 .price-val {
@@ -481,10 +547,50 @@ body {
   font-size: 11.5px;
   font-weight: 600;
   cursor: pointer;
+  margin-bottom: 12px;
 }
 
-.money-back {
-  font-size: 9.5px;
+/* License Key Box */
+.license-box {
+  border-top: 1px solid var(--border-subtle);
+  padding-top: 10px;
+  text-align: left;
+}
+
+.license-title {
+  font-size: 10.5px;
   color: var(--text-tertiary);
-  margin-top: 6px;
+  margin-bottom: 6px;
+}
+
+.license-input-row {
+  display: flex;
+  gap: 5px;
+}
+
+.license-input {
+  flex: 1;
+  background: var(--bg-app);
+  color: var(--text-primary);
+  border: 1px solid var(--border-subtle);
+  padding: 5px 8px;
+  border-radius: var(--radius-xs);
+  font-size: 11px;
+  outline: none;
+}
+
+.license-activate-btn {
+  background: var(--bg-surface-elevated);
+  color: var(--text-primary);
+  border: 1px solid var(--border-subtle);
+  font-size: 10.5px;
+  font-weight: 600;
+  padding: 5px 9px;
+  border-radius: var(--radius-xs);
+  cursor: pointer;
+}
+
+.license-status {
+  font-size: 10px;
+  margin-top: 4px;
 }
